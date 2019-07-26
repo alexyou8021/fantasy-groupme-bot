@@ -24,7 +24,7 @@ func main() {
 		c.String(http.StatusOK, "success")
 	})
 	router.POST("/" , func(c *gin.Context) {
-		c.JSON(200, nil)
+		log.Println(c.Request["name"])
 	})
 
 	router.Run(":" + port)
