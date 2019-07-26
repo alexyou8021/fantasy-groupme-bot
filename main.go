@@ -9,10 +9,6 @@ import (
 	_ "github.com/heroku/x/hmetrics/onload"
 )
 
-type CALLBACK struct {
-	name string
-}
-
 func main() {
 	port := os.Getenv("PORT")
 
@@ -28,9 +24,7 @@ func main() {
 		c.String(http.StatusOK, "success")
 	})
 	router.POST("/" , func(c *gin.Context) {
-        	var data CALLBACK
-        	c.BindJSON(&data)
-		log.Println(data.name)
+		log.Println(c.Request.Header)
 	})
 
 	router.Run(":" + port)
