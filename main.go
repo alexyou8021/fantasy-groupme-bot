@@ -24,7 +24,7 @@ func main() {
 		c.String(http.StatusOK, "success")
 	})
 	router.POST("/" , func(c *gin.Context) {
-		log.Println("success: %s", c.Request.Body)
+		log.Println("success: %s", c.GetRawData())
 	})
 
 	router.Run(":" + port)
