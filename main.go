@@ -40,7 +40,7 @@ func main() {
 	router.POST("/" , func(c *gin.Context) {
 		var data Info
         	c.BindJSON(&data)
-		log.Println(data)
+		log.Println(data.name)
 	})
 
 	router.Run(":" + port)
