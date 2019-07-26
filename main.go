@@ -9,7 +9,7 @@ import (
 	_ "github.com/heroku/x/hmetrics/onload"
 )
 type Info struct {
-	attachments []string	
+	attachments []map[string]string
 	avatar_url string
 	created_at int
 	group_id string
