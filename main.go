@@ -31,7 +31,10 @@ func main() {
 		var json msg
 		if c.BindJSON(&json) == nil {
         		log.Println("-----")
-        		log.Println(json)
+        		log.Println(json.Text)
+                        if json.Text == "!coin" {
+        			log.Println("Heads")
+			}
 			c.JSON(http.StatusOK, nil)
 		}
 	})
