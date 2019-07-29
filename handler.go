@@ -15,6 +15,20 @@ type msg struct {
 	Text string `json:"text"`
 }
 
+func sendPost(text string) {
+	message := map[string]interface{}{
+		"bot_id": os.Getenv("botid"),
+		"text":   text,
+	}
+
+	bytesRepresentation, err := json.Marshal(message)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	http.Post("https://api.groupme.com/v3/bots/post", "application/json", bytes.NewBuffer(bytesRepresentation))
+}
+
 func msgHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var botResponse msg
@@ -22,17 +36,7 @@ func msgHandler() gin.HandlerFunc {
 			log.Println(botResponse.Text)
 
 			if botResponse.Text == "!help" {
-				message := map[string]interface{}{
-					"bot_id": os.Getenv("botid"),
-					"text":   "I am your chat bot.\nType `!coin` to flip a coin.",
-				}
-
-				bytesRepresentation, err := json.Marshal(message)
-				if err != nil {
-					log.Fatalln(err)
-				}
-
-				http.Post("https://api.groupme.com/v3/bots/post", "application/json", bytes.NewBuffer(bytesRepresentation))
+				sendPost("I am your chat bot.\nType `!coin` to flip a coin.")
 			}
 
 			if botResponse.Text == "!coin" {
@@ -40,18 +44,7 @@ func msgHandler() gin.HandlerFunc {
 				if rand.Intn(2) == 1 {
 					result = "Your coin landed on TAILS."
 				}
-
-				message := map[string]interface{}{
-					"bot_id": os.Getenv("botid"),
-					"text":   result,
-				}
-
-				bytesRepresentation, err := json.Marshal(message)
-				if err != nil {
-					log.Fatalln(err)
-				}
-
-				http.Post("https://api.groupme.com/v3/bots/post", "application/json", bytes.NewBuffer(bytesRepresentation))
+				sendPost(result)
 			}
 			c.JSON(http.StatusOK, nil)
 		}
