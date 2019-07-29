@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"io/ioutil"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/heroku/x/hmetrics/onload"
@@ -21,8 +22,9 @@ func main() {
 	router.Static("/static", "static")
 
 	router.GET("/", func(c *gin.Context) {
+		x, _ := ioutil.ReadAll(c.Request.Body)
+        	log.Printf("%s", string(x))
 		c.String(http.StatusOK, "success")
-		log.Println(c.Request)
 	})
 	router.POST("/", func(c *gin.Context) {
 		log.Println(c.Request)
