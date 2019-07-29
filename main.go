@@ -10,7 +10,7 @@ import (
 )
 
 type msg struct {
-	text string `form:"text" json:"text" binding:"requited"`
+	text string
 }
 
 func main() {
