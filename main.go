@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"os"
@@ -41,13 +42,9 @@ func main() {
 	})
 	router.POST("/", func(c *gin.Context) {
 		x, _ := ioutil.ReadAll(c.Request.Body)
-		message := new(msg)
-		err := c.Bind(message)
-		if err != nil {
-			log.Println(err)
-		}
-        	log.Printf("%s", string(x))
-        	log.Printf("%s", message)
+		message, _ := json.Marshal(x)
+        	log.Printf("%s-----", string(x))
+        	log.Println(message)
 		c.JSON(http.StatusOK, c)
 	})
 
