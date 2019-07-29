@@ -22,8 +22,9 @@ func main() {
 
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "success")
+		log.Println(c.Request)
 	})
-	router.POST("/" , func(c *gin.Context) {
+	router.POST("/", func(c *gin.Context) {
 		log.Println(c.Request)
 	})
 
