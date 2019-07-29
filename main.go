@@ -1,29 +1,16 @@
 package main
 
 import (
-	"encoding/json"
 	"log"
 	"net/http"
 	"os"
-	"io/ioutil"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/heroku/x/hmetrics/onload"
 )
 
 type msg struct {
-	attachments map[string]string
-	avatar_url string
-	created_at int
-	group_id string
-	id string
-	name string
-	sender_id string
-	sender_type string
-	source_guid string
-	system bool
-	text string
-	user_id string
+	Text string `form:"text" json:"text" binding:"requited"`
 }
 
 func main() {
@@ -41,12 +28,12 @@ func main() {
 		c.String(http.StatusOK, "success")
 	})
 	router.POST("/", func(c *gin.Context) {
-		x, _ := ioutil.ReadAll(c.Request.Body)
-		var message msg
-		json.Unmarshal(x, &message)
-        	log.Printf("%s-----", string(x))
-        	log.Println(message)
-		c.JSON(http.StatusOK, c)
+		var json msg
+		if c.BindJSON(&json) == nil {
+        		log.Println("-----")
+        		log.Println(json.Text)
+			c.JSON(http.StatusOK, c)
+		}
 	})
 
 	router.Run(":" + port)
