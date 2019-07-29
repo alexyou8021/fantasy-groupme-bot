@@ -1,4 +1,4 @@
-package groupme
+package main
 
 import (
 	"log"
@@ -8,10 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	_ "github.com/heroku/x/hmetrics/onload"
 )
-
-type msg struct {
-	Text string `json:"text"`
-}
 
 func main() {
 	port := os.Getenv("PORT")

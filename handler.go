@@ -1,4 +1,4 @@
-package groupme
+package main
 
 import (
 	"bytes"
@@ -10,6 +10,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 )
+
+type msg struct {
+	Text string `json:"text"`
+}
 
 func msgHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
