@@ -47,7 +47,7 @@ func main() {
 			log.Println(err)
 		}
         	log.Printf("%s", string(x))
-        	log.Printf("%s", message.text)
+        	log.Printf("%s", message)
 		c.JSON(http.StatusOK, c)
 	})
 
