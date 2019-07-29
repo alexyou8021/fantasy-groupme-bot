@@ -10,7 +10,7 @@ import (
 )
 
 type msg struct {
-	Text string `form:"text" json:"text" binding:"requited"`
+	text string `form:"text" json:"text" binding:"requited"`
 }
 
 func main() {
@@ -31,7 +31,7 @@ func main() {
 		var json msg
 		if c.BindJSON(&json) == nil {
         		log.Println("-----")
-        		log.Println(json.Text)
+        		log.Println(json)
 			c.JSON(http.StatusOK, c)
 		}
 	})
