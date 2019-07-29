@@ -42,7 +42,8 @@ func main() {
 	})
 	router.POST("/", func(c *gin.Context) {
 		x, _ := ioutil.ReadAll(c.Request.Body)
-		message, _ := json.Marshal(x)
+		var message msg
+		json.Unmarshal(x, &message)
         	log.Printf("%s-----", string(x))
         	log.Println(message)
 		c.JSON(http.StatusOK, c)
