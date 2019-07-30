@@ -54,19 +54,21 @@ func msgHandler() gin.HandlerFunc {
 
 func reminderHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
+		if os.Getenv("reminders") != "on" {
+			c.JSON(http.StatusOK, nil)
+			return
+		}	
 		day := int(time.Now().Weekday())
 
 		if day == 0 {
-			sendPost("Reminder: Sunday games start soon. Don't forget to set your lineups!")
+			sendPost("Reminder:\nSunday games start soon.\nDon't forget to set your lineups!")
 		}
 		if day == 2 {
-			sendPost("Reminder: Waivers will be process soon. Don't forget to set your waivers!")
+			sendPost("Reminder:\nWaivers will be process soon.\nDon't forget to set your waivers!")
 		}
 		if day == 4 {
-			sendPost("Reminder: Thursday games start soon. Don't forget to set your lineups!")
+			sendPost("Reminder:\nThursday games start soon.\nDon't forget to set your lineups!")
 		}
-		log.Println(day)
-		log.Println(int(day))
 		c.JSON(http.StatusOK, nil)
 	}
 }
