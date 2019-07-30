@@ -24,6 +24,7 @@ func main() {
 		c.String(http.StatusOK, "success")
 	})
 	router.POST("/", msgHandler())
+	router.POST("/reminders", reminderHandler())
 
 	router.Run(":" + port)
 }

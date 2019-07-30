@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -48,5 +49,15 @@ func msgHandler() gin.HandlerFunc {
 			}
 			c.JSON(http.StatusOK, nil)
 		}
+	}
+}
+
+func reminderHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		//sendPost("Reminder: Waivers will be process soon!")
+		day := time.Now().Weekday()
+		log.Println(day)
+		log.Println(int(day))
+		c.JSON(http.StatusOK, nil)
 	}
 }
