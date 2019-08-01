@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"time"
+        "strings"
         "io/ioutil"
 
 	"github.com/gin-gonic/gin"
@@ -65,7 +66,7 @@ func msgHandler() gin.HandlerFunc {
 
                             members := league.Response["members"]
                             memberNum := rand.Intn(len(members))
-                            nickname := members[memberNum]["nickname"]
+                            nickname := strings.Replace(members[memberNum]["nickname"], " ", "%20", 1)
 
                             url2 := "https://insult.mattbas.org/api/insult?who=" + nickname
                             log.Println(url2)
