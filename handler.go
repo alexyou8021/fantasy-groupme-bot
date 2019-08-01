@@ -54,12 +54,12 @@ func msgHandler() gin.HandlerFunc {
 			}
 
                         if botResponse.Text == "!trashtalk" {
-                            url := "https://api.groupme.com/v3/groups/18129715?token="
-                            url = url + os.Getenv("token")
-                            resp, _ := http.Get(url)
+                            url1 := "https://api.groupme.com/v3/groups/18129715?token="
+                            url1 = url1 + os.Getenv("token")
+                            resp1, _ := http.Get(url1)
 
-                            defer resp.Body.Close()
-                            bodyBytes, _ := ioutil.ReadAll(resp.Body)
+                            defer resp1.Body.Close()
+                            bodyBytes1, _ := ioutil.ReadAll(resp1.Body)
                             var league League
                             json.Unmarshal(bodyBytes, &league)
 
@@ -67,7 +67,13 @@ func msgHandler() gin.HandlerFunc {
                             memberNum := rand.Intn(len(members))
                             nickname := members[memberNum]["nickname"]
 
-                            log.Println(nickname)                
+                            url2 := "https://insult.mattbas.org/api/insult"
+                            resp2, _ := http.Get(url2)
+
+                            defer resp2.Body.Close()
+                            bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
+
+                            log.Println(nickname + " " + bodyBytes2)                
                         }
 
 			c.JSON(http.StatusOK, nil)
