@@ -35,7 +35,7 @@ func main() {
                 bodyBytes, _ := ioutil.ReadAll(resp.Body)
                 var test1 test
                 json.Unmarshal(bodyBytes, &test1)
-                members := test1.Response["members"]
+                members := test1.Response["members"][0]["nickname"]
                 log.Println(test1)
                 log.Println(members)
                 
