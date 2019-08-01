@@ -21,6 +21,10 @@ func main() {
 	router.Static("/static", "static")
 
 	router.GET("/", func(c *gin.Context) {
+                url := "https://api.groupme.com/v3/groups/18129715?token="
+                url = url + os.Getenv("groupid")
+                resp, _ := http.Get(url)
+                log.Println(resp)
 		c.String(http.StatusOK, "success")
 	})
 	router.POST("/", msgHandler())

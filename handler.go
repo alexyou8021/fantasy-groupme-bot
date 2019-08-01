@@ -47,6 +47,10 @@ func msgHandler() gin.HandlerFunc {
 				}
 				sendPost(result)
 			}
+
+                        if botResponse.Text == "!trashtalk" {
+                        }
+
 			c.JSON(http.StatusOK, nil)
 		}
 	}
