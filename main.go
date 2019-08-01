@@ -36,6 +36,7 @@ func main() {
                 var test1 test
                 json.Unmarshal(bodyBytes, &test1)
                 members := test1.Members
+                log.Println(test1)
                 log.Println(members)
                 
 		c.String(http.StatusOK, "success")
