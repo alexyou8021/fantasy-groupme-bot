@@ -42,7 +42,7 @@ func msgHandler() gin.HandlerFunc {
 			log.Println(botResponse.Text)
 
 			if botResponse.Text == "!help" {
-				sendPost("I am your chat bot.\nType `!coin` to flip a coin.")
+				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack` to trash talk.")
 			}
 
 			if botResponse.Text == "!coin" {
@@ -53,7 +53,7 @@ func msgHandler() gin.HandlerFunc {
 				sendPost(result)
 			}
 
-                        if botResponse.Text == "!trashtalk" {
+                        if botResponse.Text == "!smack" {
                             url1 := "https://api.groupme.com/v3/groups/18129715?token="
                             url1 = url1 + os.Getenv("token")
                             resp1, _ := http.Get(url1)
@@ -73,7 +73,8 @@ func msgHandler() gin.HandlerFunc {
                             defer resp2.Body.Close()
                             bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
 
-                            log.Println(nickname + " " + string(bodyBytes2)) 
+                            result := nickname + " " + string(bodyBytes2)
+                            sendPost(result)
                         }
 
 			c.JSON(http.StatusOK, nil)
