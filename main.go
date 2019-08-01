@@ -12,7 +12,7 @@ import (
 )
 
 type test struct {
-    Response map[string]interface{} `json:"response"`
+    Response map[string][]map[string]string `json:"response"`
 }
 
 func main() {
@@ -35,9 +35,10 @@ func main() {
                 bodyBytes, _ := ioutil.ReadAll(resp.Body)
                 var test1 test
                 json.Unmarshal(bodyBytes, &test1)
-                members := test1.Response["members"][0]["nickname"]
+                
+                nickname := test1.Response["members"][0]["nickname"]
                 log.Println(test1)
-                log.Println(members)
+                log.Println(nickname)
                 
 		c.String(http.StatusOK, "success")
 	})
