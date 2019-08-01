@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+        "io/ioutil"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/heroku/x/hmetrics/onload"
@@ -22,9 +23,14 @@ func main() {
 
 	router.GET("/", func(c *gin.Context) {
                 url := "https://api.groupme.com/v3/groups/18129715?token="
-                url = url + os.Getenv("groupid")
+                url = url + os.Getenv("token")
                 resp, _ := http.Get(url)
-                log.Println(resp)
+
+                defer resp.Body.Close()
+                bodyBytes, _ := ioutil.ReadAll(resp.Body)
+                bodyString := string(bodyBytes)
+                log.Println(bodyString)
+                
 		c.String(http.StatusOK, "success")
 	})
 	router.POST("/", msgHandler())
