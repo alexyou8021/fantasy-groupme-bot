@@ -5,10 +5,15 @@ import (
 	"net/http"
 	"os"
         "io/ioutil"
+        "encoding/json"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/heroku/x/hmetrics/onload"
 )
+
+type test struct {
+    Members []map[string]interface{} `json: "members"`
+}
 
 func main() {
 	port := os.Getenv("PORT")
@@ -28,8 +33,10 @@ func main() {
 
                 defer resp.Body.Close()
                 bodyBytes, _ := ioutil.ReadAll(resp.Body)
-                bodyString := string(bodyBytes)
-                log.Println(bodyString)
+                var test1 test
+                json.Unmarshal(bodyBytes, &test1)
+                members := test1.Members
+                log.Println(members)
                 
 		c.String(http.StatusOK, "success")
 	})
