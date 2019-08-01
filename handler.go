@@ -55,7 +55,8 @@ func msgHandler() gin.HandlerFunc {
 			}
 
                         if botResponse.Text == "!smack" {
-                            url1 := "https://api.groupme.com/v3/groups/18129715?token="
+                            groupid := os.Getenv("groupid")
+                            url1 := "https://api.groupme.com/v3/groups/" + groupid + "?token="
                             url1 = url1 + os.Getenv("token")
                             resp1, _ := http.Get(url1)
 
