@@ -66,9 +66,9 @@ func msgHandler() gin.HandlerFunc {
                             members := league.Response["members"]
                             memberNum := rand.Intn(len(members))
                             nickname := members[memberNum]["nickname"]
-                            log.Println(nickname)
 
                             url2 := "https://insult.mattbas.org/api/insult?who=" + nickname
+                            log.Println(url2)
                             resp2, _ := http.Get(url2)
 
                             defer resp2.Body.Close()
