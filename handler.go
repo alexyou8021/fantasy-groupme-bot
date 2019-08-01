@@ -75,7 +75,7 @@ func msgHandler() gin.HandlerFunc {
                             defer resp2.Body.Close()
                             bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
 
-                            result := string(bodyBytes2)
+                            result := "@" + string(bodyBytes2)
                             sendPost(result)
                         }
 
