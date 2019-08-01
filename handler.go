@@ -8,12 +8,17 @@ import (
 	"net/http"
 	"os"
 	"time"
+        "io/ioutil"
 
 	"github.com/gin-gonic/gin"
 )
 
 type msg struct {
 	Text string `json:"text"`
+}
+
+type League struct {
+    Response map[string][]map[string]string `json:"response"`
 }
 
 func sendPost(text string) {
@@ -49,6 +54,20 @@ func msgHandler() gin.HandlerFunc {
 			}
 
                         if botResponse.Text == "!trashtalk" {
+                            url := "https://api.groupme.com/v3/groups/18129715?token="
+                            url = url + os.Getenv("token")
+                            resp, _ := http.Get(url)
+
+                            defer resp.Body.Close()
+                            bodyBytes, _ := ioutil.ReadAll(resp.Body)
+                            var league League
+                            json.Unmarshal(bodyBytes, &league)
+
+                            members := league.Response["members"]
+                            memberNum := rand.Intn(len(members))
+                            nickname := members[memberNum]["nickname"]
+
+                            log.Println(nickname)                
                         }
 
 			c.JSON(http.StatusOK, nil)
