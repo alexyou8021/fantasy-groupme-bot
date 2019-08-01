@@ -61,7 +61,7 @@ func msgHandler() gin.HandlerFunc {
                             defer resp1.Body.Close()
                             bodyBytes1, _ := ioutil.ReadAll(resp1.Body)
                             var league League
-                            json.Unmarshal(bodyBytes, &league)
+                            json.Unmarshal(bodyBytes1, &league)
 
                             members := league.Response["members"]
                             memberNum := rand.Intn(len(members))
@@ -73,7 +73,7 @@ func msgHandler() gin.HandlerFunc {
                             defer resp2.Body.Close()
                             bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
 
-                            log.Println(nickname + " " + bodyBytes2)                
+                            log.Println(nickname + " " + string(bodyBytes2)) 
                         }
 
 			c.JSON(http.StatusOK, nil)
