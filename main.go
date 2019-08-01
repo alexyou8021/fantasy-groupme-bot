@@ -12,7 +12,7 @@ import (
 )
 
 type test struct {
-    Members []map[string]interface{} `json: "members"`
+    Members []interface{} `json:"members"`
 }
 
 func main() {
