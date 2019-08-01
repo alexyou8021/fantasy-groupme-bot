@@ -67,7 +67,7 @@ func msgHandler() gin.HandlerFunc {
                             memberNum := rand.Intn(len(members))
                             nickname := members[memberNum]["nickname"]
 
-                            url2 := "https://insult.mattbas.org/api/insult&who=" + nickname
+                            url2 := "https://insult.mattbas.org/api/insult?who=" + nickname
                             resp2, _ := http.Get(url2)
 
                             defer resp2.Body.Close()
