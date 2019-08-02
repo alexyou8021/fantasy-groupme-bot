@@ -41,6 +41,7 @@ func msgHandler() gin.HandlerFunc {
 		var botResponse msg
 		if c.BindJSON(&botResponse) == nil {
                         fields := strings.Fields(botResponse.Text)
+                        log.Println(fields)
                         if len(fields) == 0 {
 			    c.JSON(http.StatusOK, nil)
                             return
@@ -71,10 +72,20 @@ func msgHandler() gin.HandlerFunc {
 
                             members := league.Response["members"]
                             memberNum := -1
+
                             for i := 0; i < len(members); i++ {
-                                if fields[1] == "@" + members[i]["nickname"] {
-                                    memberNum = i
+                                if len(fields) == 1 {
                                     break
+                                } else if len(fields) == 2 {
+                                    if fields[1] == "@" + members[i]["nickname"] {
+                                        memberNum = i
+                                        break
+                                    }
+                                } else {
+                                    if fields[1] + " " + fields[2] == "@" + members[i]["nickname"] {
+                                        memberNum = i
+                                        break
+                                    }
                                 }
                             }
 
