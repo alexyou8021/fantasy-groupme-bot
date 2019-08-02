@@ -42,6 +42,7 @@ func msgHandler() gin.HandlerFunc {
 		if c.BindJSON(&botResponse) == nil {
                         fields := strings.Fields(botResponse.Text)
                         log.Println(fields)
+
                         if len(fields) == 0 {
 			    c.JSON(http.StatusOK, nil)
                             return
@@ -49,17 +50,13 @@ func msgHandler() gin.HandlerFunc {
 
 			if fields[0] == "!help" {
 				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack` to trash talk.")
-			}
-
-			if fields[0] == "!coin" {
+			} else if fields[0] == "!coin" {
 				result := "Your coin landed on HEADS."
 				if rand.Intn(2) == 1 {
 					result = "Your coin landed on TAILS."
 				}
 				sendPost(result)
-			}
-
-			if fields[0] == "!smack" {
+			} else if fields[0] == "!smack" {
                             groupid := os.Getenv("groupid")
                             url1 := "https://api.groupme.com/v3/groups/" + groupid + "?token="
                             url1 = url1 + os.Getenv("token")
@@ -104,9 +101,7 @@ func msgHandler() gin.HandlerFunc {
 
                             result := "@" + string(bodyBytes2)
                             sendPost(result)
-                        }
-
-                        if fields[0] == "!stats" {
+                        } else if fields[0] == "!stats" {
                             if len(fields) <= 3 || len(fields) >= 6 {
 			        c.JSON(http.StatusOK, nil)
                                 return
@@ -125,7 +120,7 @@ func msgHandler() gin.HandlerFunc {
                             var stats map[int]map[string]float32
                             json.Unmarshal(bodyBytes, &stats)
                             log.Println(url)
-                            log.Println(stats[1034])
+                            log.Println(stats[49]["pts_half_ppr"])
                             log.Println(name)
                         }
 
