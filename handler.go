@@ -124,7 +124,7 @@ func msgHandler() gin.HandlerFunc {
                             bodyBytes, _ := ioutil.ReadAll(resp.Body)
                             var stats []map[string]string
                             json.Unmarshal(bodyBytes, &stats)
-                            log.Println(stats[1034])
+                            log.Println(stats)
                             log.Println(name)
                         }
 
