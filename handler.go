@@ -115,7 +115,7 @@ func msgHandler() gin.HandlerFunc {
                             season := fields[3]
                             week := ""
                             if len(fields) == 5 {
-                                week = fields[5]
+                                week = fields[4]
                             }
 
                             url := "https://api.sleeper.app/v1/stats/nfl/regular/" + season + "/" + week
@@ -124,6 +124,7 @@ func msgHandler() gin.HandlerFunc {
                             bodyBytes, _ := ioutil.ReadAll(resp.Body)
                             var stats []map[string]string
                             json.Unmarshal(bodyBytes, &stats)
+                            log.Println(url)
                             log.Println(stats)
                             log.Println(name)
                         }
