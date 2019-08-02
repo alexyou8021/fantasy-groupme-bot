@@ -106,6 +106,28 @@ func msgHandler() gin.HandlerFunc {
                             sendPost(result)
                         }
 
+                        if fields[0] == "!stats" {
+                            if len(fields) <= 3 || len(fields) >= 6 {
+			        c.JSON(http.StatusOK, nil)
+                                return
+                            }
+                            name := fields[1] + " " + fields[2]
+                            season := fields[3]
+                            week := ""
+                            if len(fields) == 5 {
+                                week = fields[5]
+                            }
+
+                            url := "https://api.sleeper.app/v1/stats/nfl/regular/" + season + "/" + week
+                            resp, _ := http.Get(url)
+                            defer resp.Body.Close()
+                            bodyBytes, _ := ioutil.ReadAll(resp.Body)
+                            var stats []map[string]string
+                            json.Unmarshal(bodyBytes, &stats)
+                            log.Println(stats[1034])
+                            log.Println(name)
+                        }
+
 			c.JSON(http.StatusOK, nil)
 		}
 	}
