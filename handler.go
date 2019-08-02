@@ -40,13 +40,17 @@ func msgHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var botResponse msg
 		if c.BindJSON(&botResponse) == nil {
-			log.Println(botResponse.Text)
+                        fields := strings.Fields(botResponse.Text)
+                        if len(fields) == 0 {
+			    c.JSON(http.StatusOK, nil)
+                            return
+                        }
 
-			if botResponse.Text == "!help" {
+			if fields[0] == "!help" {
 				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack` to trash talk.")
 			}
 
-			if botResponse.Text == "!coin" {
+			if fields[0] == "!coin" {
 				result := "Your coin landed on HEADS."
 				if rand.Intn(2) == 1 {
 					result = "Your coin landed on TAILS."
@@ -54,7 +58,7 @@ func msgHandler() gin.HandlerFunc {
 				sendPost(result)
 			}
 
-                        if botResponse.Text == "!smack" {
+			if fields[0] == "!smack" {
                             groupid := os.Getenv("groupid")
                             url1 := "https://api.groupme.com/v3/groups/" + groupid + "?token="
                             url1 = url1 + os.Getenv("token")
@@ -66,7 +70,18 @@ func msgHandler() gin.HandlerFunc {
                             json.Unmarshal(bodyBytes1, &league)
 
                             members := league.Response["members"]
-                            memberNum := rand.Intn(len(members))
+                            memberNum := -1
+                            for i := 0; i < len(members); i++ {
+                                if fields[1] == "@" + members[i]["nickname"] {
+                                    memberNum = i
+                                    break
+                                }
+                            }
+
+                            if memberNum == -1 {
+                                memberNum = rand.Intn(len(members))
+                            }
+
                             nickname := strings.Replace(members[memberNum]["nickname"], " ", "%20", 1)
 
                             url2 := "https://insult.mattbas.org/api/insult?who=" + nickname
