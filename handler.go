@@ -49,7 +49,7 @@ func msgHandler() gin.HandlerFunc {
                         }
 
 			if fields[0] == "!help" {
-				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack` to trash talk.")
+				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to trash talk.")
 			} else if fields[0] == "!coin" {
 				result := "Your coin landed on HEADS."
 				if rand.Intn(2) == 1 {
