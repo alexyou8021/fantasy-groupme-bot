@@ -122,7 +122,7 @@ func msgHandler() gin.HandlerFunc {
                             resp, _ := http.Get(url)
                             defer resp.Body.Close()
                             bodyBytes, _ := ioutil.ReadAll(resp.Body)
-                            var stats []map[string]string
+                            var stats []map[string]interface{}
                             json.Unmarshal(bodyBytes, &stats)
                             log.Println(url)
                             log.Println(stats)
