@@ -36,8 +36,9 @@ func storePlayers() {
 	resp, _ := http.Get(url)
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
-	var players []map[string]interface{}
+	var players map[int]map[string]interface{}
 	json.Unmarshal(bodyBytes, &players)
+	log.Println(bodyBytes)
 	log.Println(players)
 
 }
