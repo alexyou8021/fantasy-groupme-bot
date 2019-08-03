@@ -40,7 +40,7 @@ func storePlayers() {
 		name, _ := value["full_name"].(string)
 		position, _ := value["position"].(string)
 		log.Println(name + " " + position + " " + id)
-	        _, err := db.Exec("INSERT INTO players VALUES (" + id + ", '" + name + "', '" + position + "');")
+	        _, err := db.Exec("INSERT INTO players VALUES (" + id + ", \"" + name + "\", \"" + position + "\");")
                 if err != nil {
 			log.Fatal(err)
 			break
