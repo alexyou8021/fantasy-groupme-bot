@@ -50,7 +50,7 @@ func msgHandler() gin.HandlerFunc {
 			}
 
 			if fields[0] == "!help" {
-				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to trash talk.")
+				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\n Type `!stats player season week` for stats.")
 			} else if fields[0] == "!coin" {
 				result := "Your coin landed on HEADS."
 				if rand.Intn(2) == 1 {
@@ -115,6 +115,9 @@ func msgHandler() gin.HandlerFunc {
 				}
 
 				player := queryPlayer(name)
+				if player.Name == nil {
+					return
+				}
 
 				url := "https://api.sleeper.app/v1/stats/nfl/regular/" + season + "/" + week
 				resp, _ := http.Get(url)
@@ -130,15 +133,31 @@ func msgHandler() gin.HandlerFunc {
 
 				pts := fmt.Sprintf("%.1f", stat["pts_half_ppr"])
 				message := player.Name + ": " + pts + " pts\n"
-				if player.Position == "WR" {	
+				if player.Position == "WR" || player.Position == "TE" {	
+					rec_tgt := fmt.Sprintf("%.0f", stat["rec_tgt"])
 					rec := fmt.Sprintf("%.0f", stat["rec"])
 					rec_yd := fmt.Sprintf("%.0f", stat["rec_yd"])
-					rec_tgt := fmt.Sprintf("%.0f", stat["rec_tgt"])
 					rec_td := fmt.Sprintf("%.0f", stat["rec_td"])
+					message = message + "- Targets: " + rec_tgt + "\n"
 					message = message + "- Receptions: " + rec + "\n"
 					message = message + "- Yards: " + rec_yd + "\n"
-					message = message + "- Targets: " + rec_tgt + "\n"
 					message = message + "- Touchdowns: " + rec_td + "\n"
+					sendPost(message)
+				} else if player.Position == "RB" {	
+					rush_att := fmt.Sprintf("%.0f", stat["rush_att"])
+					rush_yd := fmt.Sprintf("%.0f", stat["rush_yd"])
+					rush_td := fmt.Sprintf("%.0f", stat["rush_td"])
+					rec_tgt := fmt.Sprintf("%.0f", stat["rec_tgt"])
+					rec := fmt.Sprintf("%.0f", stat["rec"])
+					rec_yd := fmt.Sprintf("%.0f", stat["rec_yd"])
+					rec_td := fmt.Sprintf("%.0f", stat["rec_td"])
+					message = message + "- Rush Att: " + rush_att + "\n"
+					message = message + "- Rush Yards: " + rush_yd + "\n"
+					message = message + "- Rush Touchdowns: " + rush_td + "\n"
+					message = message + "- Targets: " + rec_tgt + "\n"
+					message = message + "- Receptions: " + rec + "\n"
+					message = message + "- Rec Yards: " + rec_yd + "\n"
+					message = message + "- Rec Touchdowns: " + rec_td + "\n"
 					sendPost(message)
 				} else {
 					sendPost(player.Name + ": " + pts + " pts")
