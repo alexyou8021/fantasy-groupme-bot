@@ -9,10 +9,12 @@ import (
 )
 
 func storePlayers() {
-	_, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
 	} else {
-		log.Println("db")
+                result, err := db.Exec("CREATE TABLE players (id varchar(255), name varchar(255))")
+		log.Println(result)
+		log.Println(err)
 	}
 }
