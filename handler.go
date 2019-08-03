@@ -128,10 +128,14 @@ func msgHandler() gin.HandlerFunc {
 				log.Println(stat)
 				log.Println(player.Name)
 
-				if player.Position == "WR" {
-					sendPost(player.Name + ": 5 pts")
+				pts := fmt.Sprintf("%.1f", stat["pts_half_ppr"])
+				if player.Position == "WR" {	
+					rec := fmt.Sprintf("%.0f", stat["rec"])
+					rec_yd := fmt.Sprintf("%.0f", stat["rec_yd"])
+					rec_tgt := fmt.Sprintf("%.0f", stat["rec_tgt"])
+					rec_td := fmt.Sprintf("%.0f", stat["rec_td"])
+					sendPost(player.Name + ": " + pts + " pts" + rec_yd + rec_tgt + rec_td + rec)
 				} else {
-					pts := fmt.Sprintf("%f", stat["pts_half_ppr"])
 					sendPost(player.Name + ": " + pts + " pts")
 				}
 			}
