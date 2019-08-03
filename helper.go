@@ -24,21 +24,27 @@ func createPlayersTable() {
 }
 
 func storePlayers() {
-	//db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
-	//if err != nil {
-	//	log.Fatal(err)
-	//} else {
-	//        result, err := db.Exec("CREATE TABLE players (id varchar(255), name varchar(255))")
-	//	log.Println(result)
-	//	log.Println(err)
-	//}
+	_, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
 	url := "https://api.sleeper.app/v1/players/nfl/"
 	resp, _ := http.Get(url)
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
 	var players map[int]map[string]interface{}
 	json.Unmarshal(bodyBytes, &players)
-	log.Println(bodyBytes)
 	log.Println(players)
 
+	for id, value := range players {
+		name, _ := value["full_name"].(string)
+		position, _ := value["position"].(string)
+		log.Println(name + " " + position + string(id))
+	        //_, err := db.Exec("INSERT INTO players VALUES (" + string(id) + ", " + name + ", " + position + ");")
+                //if err != nil {
+		//	log.Fatal(err)
+		//	break
+		//}
+		//log.Println(name)
+	}
 }
