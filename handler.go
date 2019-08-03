@@ -129,12 +129,17 @@ func msgHandler() gin.HandlerFunc {
 				log.Println(player.Name)
 
 				pts := fmt.Sprintf("%.1f", stat["pts_half_ppr"])
+				message := player.Name + ": " + pts + "\n"
 				if player.Position == "WR" {	
 					rec := fmt.Sprintf("%.0f", stat["rec"])
 					rec_yd := fmt.Sprintf("%.0f", stat["rec_yd"])
 					rec_tgt := fmt.Sprintf("%.0f", stat["rec_tgt"])
 					rec_td := fmt.Sprintf("%.0f", stat["rec_td"])
-					sendPost(player.Name + ": " + pts + " pts" + rec_yd + rec_tgt + rec_td + rec)
+					message = message + " Receptions: " + rec + "\n"
+					message = message + " Yards: " + rec_yd + "\n"
+					message = message + " Targets: " + rec_tgt + "\n"
+					message = message + " Touchdowns: " + rec_td + "\n"
+					sendPost(message)
 				} else {
 					sendPost(player.Name + ": " + pts + " pts")
 				}
