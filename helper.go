@@ -12,6 +12,12 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type Player struct {
+	Id int `json: id`
+	Name string `json: name`
+	Position string `json: position`
+}
+
 func createPlayersTable() {
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -50,12 +56,18 @@ func storePlayers() {
 	}
 }
 
-func queryPlayer(name string) map[string]interface{} {	
+func queryPlayer(name string) {	
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	result, _ := db.Exec("SELECT * FROM players WHERE name='" + name  + "';")
-	log.Println(result)
-	return nil
+	result, _ := db.Query("SELECT * FROM players WHERE name='" + name  + "';")
+        for result.Next() {
+		var player Player
+        	err = result.Scan(&player.Id, &player.Name, & player.Position)
+		if err != nil {
+			log.Fatal(err)
+		}
+                log.Println(player)
+	}
 }
