@@ -49,3 +49,13 @@ func storePlayers() {
 		}
 	}
 }
+
+func queryPlayer(name string) map[string]interface{} {	
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	result, _ := db.Exec("SELECT * FROM players WHERE name='" + name  + "';")
+	log.Println(result)
+	return nil
+}

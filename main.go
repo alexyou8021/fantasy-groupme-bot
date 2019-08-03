@@ -21,8 +21,7 @@ func main() {
 	router.Static("/static", "static")
 
 	router.GET("/", func(c *gin.Context) {
-		createPlayersTable()
-		storePlayers()
+		queryPlayer("Rishard Cook")
 		c.String(http.StatusOK, "success")
 	})
 	router.POST("/", msgHandler())
