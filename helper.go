@@ -24,7 +24,7 @@ func createPlayersTable() {
 }
 
 func storePlayers() {
-	_, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
+	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -40,12 +40,11 @@ func storePlayers() {
 		id, _ := value["player_id"].(string)
 		name, _ := value["full_name"].(string)
 		position, _ := value["position"].(string)
+	        _, err := db.Exec("INSERT INTO players VALUES (" + id + ", " + name + ", " + position + ");")
+                if err != nil {
+			log.Fatal(err)
+			break
+		}
 		log.Println(name + " " + position + string(id))
-	        //_, err := db.Exec("INSERT INTO players VALUES (" + string(id) + ", " + name + ", " + position + ");")
-                //if err != nil {
-		//	log.Fatal(err)
-		//	break
-		//}
-		//log.Println(name)
 	}
 }
