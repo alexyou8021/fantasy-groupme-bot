@@ -114,8 +114,8 @@ func msgHandler() gin.HandlerFunc {
 					week = fields[4]
 				}
 
-				player := queryPlayer(name)
-				if player.Name == nil {
+				player, err := queryPlayer(name)
+				if err != nil {
 					return
 				}
 
