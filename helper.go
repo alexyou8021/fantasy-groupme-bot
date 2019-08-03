@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log"
-	"os"
-	"io/ioutil"
 	"encoding/json"
+	"io/ioutil"
+	"log"
 	"net/http"
+	"os"
 	"strings"
 
 	"database/sql"
@@ -13,8 +13,8 @@ import (
 )
 
 type Player struct {
-	Id int `json: id`
-	Name string `json: name`
+	Id       int    `json: id`
+	Name     string `json: name`
 	Position string `json: position`
 }
 
@@ -48,15 +48,15 @@ func storePlayers() {
 		name = strings.Replace(name, "'", "", 1)
 		position, _ := value["position"].(string)
 		log.Println(name + " " + position + " " + id)
-	        _, err := db.Exec("INSERT INTO players VALUES (" + id + ", '" + name + "', '" + position + "');")
-                if err != nil {
+		_, err := db.Exec("INSERT INTO players VALUES (" + id + ", '" + name + "', '" + position + "');")
+		if err != nil {
 			log.Fatal(err)
 			break
 		}
 	}
 }
 
-func queryPlayer(name string) Player {	
+func queryPlayer(name string) Player {
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
@@ -64,14 +64,14 @@ func queryPlayer(name string) Player {
 
 	var player Player
 
-	result, _ := db.Query("SELECT * FROM players WHERE name='" + name  + "';")
-        for result.Next() {
-        	err = result.Scan(&player.Id, &player.Name, & player.Position)
+	result, _ := db.Query("SELECT * FROM players WHERE name='" + name + "';")
+	for result.Next() {
+		err = result.Scan(&player.Id, &player.Name, &player.Position)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
 
-        log.Println(player)
+	log.Println(player)
 	return player
 }

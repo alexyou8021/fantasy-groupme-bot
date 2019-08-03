@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"time"
+	"fmt"
 
 	"github.com/gin-gonic/gin"
 )
@@ -121,10 +122,18 @@ func msgHandler() gin.HandlerFunc {
 				bodyBytes, _ := ioutil.ReadAll(resp.Body)
 				var stats map[int]map[string]float32
 				json.Unmarshal(bodyBytes, &stats)
+				stat := stats[player.Id]
 
 				log.Println(url)
-				log.Println(stats[player.Id])
+				log.Println(stat)
 				log.Println(player.Name)
+
+				if player.Position == "WR" {
+					sendPost(player.Name + ": 5 pts")
+				} else {
+					pts := fmt.Sprintf("%f", stat["pts_half_ppr"])
+					sendPost(player.Name + ": " + pts + " pts")
+				}
 			}
 
 			c.JSON(http.StatusOK, nil)
