@@ -118,6 +118,10 @@ func msgHandler() gin.HandlerFunc {
 				if err != nil {
 					return
 				}
+				if player.Name == "" {
+					sendPost("Player Not Found.")
+					return
+				}
 
 				url := "https://api.sleeper.app/v1/stats/nfl/regular/" + season + "/" + week
 				resp, _ := http.Get(url)
