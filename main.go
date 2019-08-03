@@ -21,6 +21,7 @@ func main() {
 	router.Static("/static", "static")
 
 	router.GET("/", func(c *gin.Context) {
+		storePlayers()
 		c.String(http.StatusOK, "success")
 	})
 	router.POST("/", msgHandler())

@@ -3,13 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
+	"strings"
 	"time"
-        "strings"
-        "io/ioutil"
 
 	"github.com/gin-gonic/gin"
 )
@@ -19,7 +19,7 @@ type msg struct {
 }
 
 type League struct {
-    Response map[string][]map[string]string `json:"response"`
+	Response map[string][]map[string]string `json:"response"`
 }
 
 func sendPost(text string) {
@@ -40,13 +40,13 @@ func msgHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var botResponse msg
 		if c.BindJSON(&botResponse) == nil {
-                        fields := strings.Fields(botResponse.Text)
-                        log.Println(fields)
+			fields := strings.Fields(botResponse.Text)
+			log.Println(fields)
 
-                        if len(fields) == 0 {
-			    c.JSON(http.StatusOK, nil)
-                            return
-                        }
+			if len(fields) == 0 {
+				c.JSON(http.StatusOK, nil)
+				return
+			}
 
 			if fields[0] == "!help" {
 				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to trash talk.")
@@ -57,72 +57,72 @@ func msgHandler() gin.HandlerFunc {
 				}
 				sendPost(result)
 			} else if fields[0] == "!smack" {
-                            groupid := os.Getenv("groupid")
-                            url1 := "https://api.groupme.com/v3/groups/" + groupid + "?token="
-                            url1 = url1 + os.Getenv("token")
-                            resp1, _ := http.Get(url1)
+				groupid := os.Getenv("groupid")
+				url1 := "https://api.groupme.com/v3/groups/" + groupid + "?token="
+				url1 = url1 + os.Getenv("token")
+				resp1, _ := http.Get(url1)
 
-                            defer resp1.Body.Close()
-                            bodyBytes1, _ := ioutil.ReadAll(resp1.Body)
-                            var league League
-                            json.Unmarshal(bodyBytes1, &league)
+				defer resp1.Body.Close()
+				bodyBytes1, _ := ioutil.ReadAll(resp1.Body)
+				var league League
+				json.Unmarshal(bodyBytes1, &league)
 
-                            members := league.Response["members"]
-                            memberNum := -1
+				members := league.Response["members"]
+				memberNum := -1
 
-                            for i := 0; i < len(members); i++ {
-                                if len(fields) == 1 {
-                                    break
-                                } else if len(fields) == 2 {
-                                    if fields[1] == "@" + members[i]["nickname"] {
-                                        memberNum = i
-                                        break
-                                    }
-                                } else {
-                                    if fields[1] + " " + fields[2] == "@" + members[i]["nickname"] {
-                                        memberNum = i
-                                        break
-                                    }
-                                }
-                            }
+				for i := 0; i < len(members); i++ {
+					if len(fields) == 1 {
+						break
+					} else if len(fields) == 2 {
+						if fields[1] == "@"+members[i]["nickname"] {
+							memberNum = i
+							break
+						}
+					} else {
+						if fields[1]+" "+fields[2] == "@"+members[i]["nickname"] {
+							memberNum = i
+							break
+						}
+					}
+				}
 
-                            if memberNum == -1 {
-                                memberNum = rand.Intn(len(members))
-                            }
+				if memberNum == -1 {
+					memberNum = rand.Intn(len(members))
+				}
 
-                            nickname := strings.Replace(members[memberNum]["nickname"], " ", "%20", 1)
+				nickname := strings.Replace(members[memberNum]["nickname"], " ", "%20", 1)
 
-                            url2 := "https://insult.mattbas.org/api/insult?who=" + nickname
-                            log.Println(url2)
-                            resp2, _ := http.Get(url2)
+				url2 := "https://insult.mattbas.org/api/insult?who=" + nickname
+				log.Println(url2)
+				resp2, _ := http.Get(url2)
 
-                            defer resp2.Body.Close()
-                            bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
+				defer resp2.Body.Close()
+				bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
 
-                            result := "@" + string(bodyBytes2)
-                            sendPost(result)
-                        } else if fields[0] == "!stats" {
-                            if len(fields) <= 3 || len(fields) >= 6 {
-			        c.JSON(http.StatusOK, nil)
-                                return
-                            }
-                            name := fields[1] + " " + fields[2]
-                            season := fields[3]
-                            week := ""
-                            if len(fields) == 5 {
-                                week = fields[4]
-                            }
+				result := "@" + string(bodyBytes2)
+				sendPost(result)
+			} else if fields[0] == "!stats" {
+				if len(fields) <= 3 || len(fields) >= 6 {
+					c.JSON(http.StatusOK, nil)
+					return
+				}
+				name := fields[1] + " " + fields[2]
+				season := fields[3]
+				week := ""
+				if len(fields) == 5 {
+					week = fields[4]
+				}
 
-                            url := "https://api.sleeper.app/v1/stats/nfl/regular/" + season + "/" + week
-                            resp, _ := http.Get(url)
-                            defer resp.Body.Close()
-                            bodyBytes, _ := ioutil.ReadAll(resp.Body)
-                            var stats map[int]map[string]float32
-                            json.Unmarshal(bodyBytes, &stats)
-                            log.Println(url)
-                            log.Println(stats[49]["pts_half_ppr"])
-                            log.Println(name)
-                        }
+				url := "https://api.sleeper.app/v1/stats/nfl/regular/" + season + "/" + week
+				resp, _ := http.Get(url)
+				defer resp.Body.Close()
+				bodyBytes, _ := ioutil.ReadAll(resp.Body)
+				var stats map[int]map[string]float32
+				json.Unmarshal(bodyBytes, &stats)
+				log.Println(url)
+				log.Println(stats[49]["pts_half_ppr"])
+				log.Println(name)
+			}
 
 			c.JSON(http.StatusOK, nil)
 		}
@@ -134,7 +134,7 @@ func reminderHandler() gin.HandlerFunc {
 		if os.Getenv("reminders") != "on" {
 			c.JSON(http.StatusOK, nil)
 			return
-		}	
+		}
 		day := int(time.Now().Weekday())
 
 		if day == 0 {
