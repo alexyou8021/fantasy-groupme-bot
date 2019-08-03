@@ -56,18 +56,22 @@ func storePlayers() {
 	}
 }
 
-func queryPlayer(name string) {	
+func queryPlayer(name string) Player {	
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	var player Player
+
 	result, _ := db.Query("SELECT * FROM players WHERE name='" + name  + "';")
         for result.Next() {
-		var player Player
         	err = result.Scan(&player.Id, &player.Name, & player.Position)
 		if err != nil {
 			log.Fatal(err)
 		}
-                log.Println(player)
 	}
+
+        log.Println(player)
+	return player
 }

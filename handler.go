@@ -113,15 +113,18 @@ func msgHandler() gin.HandlerFunc {
 					week = fields[4]
 				}
 
+				player := queryPlayer(name)
+
 				url := "https://api.sleeper.app/v1/stats/nfl/regular/" + season + "/" + week
 				resp, _ := http.Get(url)
 				defer resp.Body.Close()
 				bodyBytes, _ := ioutil.ReadAll(resp.Body)
 				var stats map[int]map[string]float32
 				json.Unmarshal(bodyBytes, &stats)
+
 				log.Println(url)
-				log.Println(stats[49]["pts_half_ppr"])
-				log.Println(name)
+				log.Println(stats[player.Id])
+				log.Println(player.Name)
 			}
 
 			c.JSON(http.StatusOK, nil)
