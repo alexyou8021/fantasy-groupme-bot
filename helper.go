@@ -34,17 +34,16 @@ func storePlayers() {
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
 	var players map[int]map[string]interface{}
 	json.Unmarshal(bodyBytes, &players)
-	log.Println(players)
 
 	for _, value := range players {
 		id, _ := value["player_id"].(string)
 		name, _ := value["full_name"].(string)
 		position, _ := value["position"].(string)
-	        _, err := db.Exec("INSERT INTO players VALUES (" + id + ", " + name + ", " + position + ");")
+		log.Println(name + " " + position + " " + id)
+	        _, err := db.Exec("INSERT INTO players VALUES (" + id + ", '" + name + "', '" + position + "');")
                 if err != nil {
 			log.Fatal(err)
 			break
 		}
-		log.Println(name + " " + position + string(id))
 	}
 }
