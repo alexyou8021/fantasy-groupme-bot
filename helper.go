@@ -36,7 +36,8 @@ func storePlayers() {
 	json.Unmarshal(bodyBytes, &players)
 	log.Println(players)
 
-	for id, value := range players {
+	for _, value := range players {
+		id, _ := value["player_id"].(string)
 		name, _ := value["full_name"].(string)
 		position, _ := value["position"].(string)
 		log.Println(name + " " + position + string(id))
