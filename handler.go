@@ -143,9 +143,9 @@ func msgHandler() gin.HandlerFunc {
 					rec_yd := fmt.Sprintf("%.0f", stat["rec_yd"])
 					rec_td := fmt.Sprintf("%.0f", stat["rec_td"])
 					message = message + "- Targets: " + rec_tgt + "\n"
-					message = message + "- Receptions: " + rec + "\n"
+					message = message + "- Catches: " + rec + "\n"
 					message = message + "- Yards: " + rec_yd + "\n"
-					message = message + "- Touchdowns: " + rec_td + "\n"
+					message = message + "- TDs: " + rec_td + "\n"
 					sendPost(message)
 				} else if player.Position == "RB" {	
 					rush_att := fmt.Sprintf("%.0f", stat["rush_att"])
@@ -157,12 +157,26 @@ func msgHandler() gin.HandlerFunc {
 					rec_td := fmt.Sprintf("%.0f", stat["rec_td"])
 					message = message + "- Rush Att: " + rush_att + "\n"
 					message = message + "- Rush Yards: " + rush_yd + "\n"
-					message = message + "- Rush Touchdowns: " + rush_td + "\n"
+					message = message + "- Rush TDs: " + rush_td + "\n"
 					message = message + "- Targets: " + rec_tgt + "\n"
-					message = message + "- Receptions: " + rec + "\n"
+					message = message + "- Catches: " + rec + "\n"
 					message = message + "- Rec Yards: " + rec_yd + "\n"
-					message = message + "- Rec Touchdowns: " + rec_td + "\n"
+					message = message + "- Rec TDs: " + rec_td + "\n"
 					sendPost(message)
+				} else if player.Position == "QB" {
+					sendPost(player.Name + ": " + pts + " pts")
+					pass_yd := fmt.Sprintf("%.0f", stat["pass_yd"])
+					pass_td := fmt.Sprintf("%.0f", stat["pass_td"])
+					pass_int := fmt.Sprintf("%.0f", stat["pass_int"])
+					rush_yd := fmt.Sprintf("%.0f", stat["rush_yd"])
+					rush_td := fmt.Sprintf("%.0f", stat["rush_td"])
+					fum_lost := fmt.Sprintf("%.0f", stat["fum_lost"])
+					message = message + "- Passing Yards: " + pass_yd + "\n"
+					message = message + "- Passing TDs: " + pass_td + "\n"
+					message = message + "- Passing INTs: " + pass_int + "\n"
+					message = message + "- Rush Yards: " + rush_yd + "\n"
+					message = message + "- Rush TDs: " + rush_td + "\n"
+					message = message + "- Fumbles: " + fum_lost + "\n"
 				} else {
 					sendPost(player.Name + ": " + pts + " pts")
 				}
