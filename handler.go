@@ -50,13 +50,16 @@ func msgHandler() gin.HandlerFunc {
 			}
 
 			if fields[0] == "!help" {
-				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.")
+				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.\nType `!draft` for draft info.")
 			} else if fields[0] == "!coin" {
 				result := "Your coin landed on HEADS."
 				if rand.Intn(2) == 1 {
 					result = "Your coin landed on TAILS."
 				}
 				sendPost(result)
+			} else if fields[0] == "!draft" {
+				message := os.Getenv("draft")
+				sendPost(message)
 			} else if fields[0] == "!smack" {
 				groupid := os.Getenv("groupid")
 				url1 := "https://api.groupme.com/v3/groups/" + groupid + "?token="
