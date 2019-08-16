@@ -136,19 +136,26 @@ func msgHandler() gin.HandlerFunc {
 				for key, value := range rosters {
 					owner_id, _ := value["owner_id"].(string)
 					display_name := usernames[owner_id]
-					wins, _ := value["wins"].(string)
-					losses, _ := value["losses"].(string)
-					waiver, _ := value["waiver_position"].(string)
+					wins, _ := value["wins"].(int)
+					losses, _ := value["losses"].(int)
+					waiver, _ := value["waiver_position"].(int)
 					standings[key] = map[string]string{
 						"name": display_name,
-						"wins": wins,
-						"losses": losses,
-						"waiver": waiver,
+						//"wins": wins,
+						//"losses": losses,
+						//"waiver": waiver,
 					}
+					log.Println(wins)
+					log.Println(losses)
+					log.Println(waiver)
 				}
 
-				log.Println(standings)
-				
+				message := ""
+				for _, value := range standings {
+					message = message + value["name"] + "\n"
+				}
+
+				log.Println(message)
 			} else if fields[0] == "!stats" {
 				if len(fields) <= 3 || len(fields) >= 6 {
 					c.JSON(http.StatusOK, nil)
