@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 	"fmt"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -141,18 +142,16 @@ func msgHandler() gin.HandlerFunc {
 					waiver, _ := value["waiver_position"].(int)
 					standings[key] = map[string]string{
 						"name": display_name,
-						//"wins": wins,
-						//"losses": losses,
-						//"waiver": waiver,
+						"wins": strconv.Itoa(wins),
+						"losses": strconv.Itoa(losses),
+						"waiver": strconv.Itoa(waiver),
 					}
-					log.Println(wins)
-					log.Println(losses)
-					log.Println(waiver)
 				}
 
-				message := ""
+				message := "Name      Wins Losses Waiver\n"
 				for _, value := range standings {
 					message = message + value["name"] + "\n"
+					message = message + "             " + value["wins"] + "      " + value["losses"] + "      " + value["waiver"]  + "\n"
 				}
 
 				log.Println(message)
