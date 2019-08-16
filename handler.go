@@ -123,6 +123,8 @@ func msgHandler() gin.HandlerFunc {
 					usernames[id] = display_name
 				}
 
+				log.Println(usernames)
+
 				url2 := "https://api.sleeper.app/v1/league/" + league  + "/rosters"
 				resp2, _ := http.Get(url2)
 
@@ -132,7 +134,8 @@ func msgHandler() gin.HandlerFunc {
 				json.Unmarshal(bodyBytes2, &rosters)
 				var standings []map[string]string
 				for key, value := range users {
-					owner_id, _ := value["owner_id"].(string)
+					owner_id, err := value["owner_id"].(string)
+					log.Println(err)
 					display_name := usernames[owner_id]
 					wins, _ := value["wins"].(string)
 					losses, _ := value["losses"].(string)
