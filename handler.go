@@ -116,7 +116,7 @@ func msgHandler() gin.HandlerFunc {
 				var users []map[string]interface{}
 				json.Unmarshal(bodyBytes1, &users)
 
-				var usernames map[string]string
+				usernames := make(map[string]string)
 				for _, value := range users {
 					id, _ := value["user_id"].(string)
 					display_name, _ := value["display_name"].(string)
@@ -132,7 +132,7 @@ func msgHandler() gin.HandlerFunc {
 				bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
 				var rosters []map[string]interface{}
 				json.Unmarshal(bodyBytes2, &rosters)
-				var standings []map[string]string
+				standings := make([]map[string]string, 12)
 				for key, value := range users {
 					owner_id, err := value["owner_id"].(string)
 					log.Println(err)
