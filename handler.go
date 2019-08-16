@@ -114,7 +114,8 @@ func msgHandler() gin.HandlerFunc {
 				bodyBytes1, _ := ioutil.ReadAll(resp1.Body)
 				var rosters []map[string]interface{}
 				json.Unmarshal(bodyBytes1, &rosters)
-				log.Println(rosters[0])
+				roster, _ := rosters[0]["owner_id"].(string)
+				log.Println(roster)
 
 				url2 := "https://api.sleeper.app/v1/league/" + league  + "/users"
 				resp2, _ := http.Get(url2)
