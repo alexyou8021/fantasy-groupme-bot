@@ -107,24 +107,46 @@ func msgHandler() gin.HandlerFunc {
 				sendPost(result)
 			} else if fields[0] == "!standings" {
 				league := os.Getenv("league")
-				url1 := "https://api.sleeper.app/v1/league/" + league  + "/rosters"
+
+				url1 := "https://api.sleeper.app/v1/league/" + league  + "/users"
 				resp1, _ := http.Get(url1)
 
 				defer resp1.Body.Close()
 				bodyBytes1, _ := ioutil.ReadAll(resp1.Body)
-				var rosters []map[string]interface{}
-				json.Unmarshal(bodyBytes1, &rosters)
-				roster, _ := rosters[0]["owner_id"].(string)
-				log.Println(roster)
+				var users []map[string]interface{}
+				json.Unmarshal(bodyBytes1, &users)
 
-				url2 := "https://api.sleeper.app/v1/league/" + league  + "/users"
+				var usernames map[string]string
+				for _, value := range users {
+					id, _ := value["user_id"].(string)
+					display_name, _ := value["display_name"].(string)
+					usernames[id] = display_name
+				}
+
+				url2 := "https://api.sleeper.app/v1/league/" + league  + "/rosters"
 				resp2, _ := http.Get(url2)
 
 				defer resp2.Body.Close()
 				bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
-				var users []map[string]interface{}
-				json.Unmarshal(bodyBytes2, &users)
-                                log.Println(users[0])
+				var rosters []map[string]interface{}
+				json.Unmarshal(bodyBytes2, &rosters)
+				var standings []map[string]string
+				for key, value := range users {
+					owner_id, _ := value["owner_id"].(string)
+					display_name := usernames[owner_id]
+					wins, _ := value["wins"].(string)
+					losses, _ := value["losses"].(string)
+					waiver, _ := value["waiver_position"].(string)
+					standings[key] = map[string]string{
+						"name": display_name,
+						"wins": wins,
+						"losses": losses,
+						"waiver": waiver,
+					}
+				}
+
+				log.Println(standings)
+				
 			} else if fields[0] == "!stats" {
 				if len(fields) <= 3 || len(fields) >= 6 {
 					c.JSON(http.StatusOK, nil)
