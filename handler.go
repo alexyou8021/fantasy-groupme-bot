@@ -133,9 +133,8 @@ func msgHandler() gin.HandlerFunc {
 				var rosters []map[string]interface{}
 				json.Unmarshal(bodyBytes2, &rosters)
 				standings := make([]map[string]string, 12)
-				for key, value := range users {
-					owner_id, err := value["owner_id"].(string)
-					log.Println(err)
+				for key, value := range rosters {
+					owner_id, _ := value["owner_id"].(string)
 					display_name := usernames[owner_id]
 					wins, _ := value["wins"].(string)
 					losses, _ := value["losses"].(string)
