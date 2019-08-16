@@ -151,7 +151,7 @@ func msgHandler() gin.HandlerFunc {
 				message := "Name      Wins Losses Waiver\n-----------------------------\n"
 				for _, value := range standings {
 					message = message + value["name"] + "\n"
-					message = message + "                " + value["wins"] + "       " + value["losses"] + "       " + value["waiver"]  + "\n"
+					message = message + "                   " + value["wins"] + "        " + value["losses"] + "           " + value["waiver"]  + "\n"
 				}
 
 				sendPost(message)
