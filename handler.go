@@ -105,6 +105,17 @@ func msgHandler() gin.HandlerFunc {
 
 				result := "@" + string(bodyBytes2)
 				sendPost(result)
+			} else if fields[0] == "!standings" {
+				league := os.Getenv("league")
+				url1 := "https://api.sleeper.app/v1/league/" + league  + "/rosters"
+				resp1, _ := http.Get(url1)
+
+				defer resp1.Body.Close()
+				bodyBytes1, _ := ioutil.ReadAll(resp1.Body)
+				var rosters []map[string]interface{}
+				json.Unmarshal(bodyBytes1, &rosters)
+				log.Println(rosters)
+				
 			} else if fields[0] == "!stats" {
 				if len(fields) <= 3 || len(fields) >= 6 {
 					c.JSON(http.StatusOK, nil)
