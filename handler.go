@@ -51,7 +51,7 @@ func msgHandler() gin.HandlerFunc {
 			}
 
 			if fields[0] == "!help" {
-				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.\nType `!draft` for draft info.")
+				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.\nType `!draft` for draft info.\nType `!standings` for league standings.")
 			} else if fields[0] == "!coin" {
 				result := "Your coin landed on HEADS."
 				if rand.Intn(2) == 1 {
@@ -148,13 +148,13 @@ func msgHandler() gin.HandlerFunc {
 					}
 				}
 
-				message := "Name      Wins Losses Waiver\n"
+				message := "Name      Wins Losses Waiver\n-----------------------------\n"
 				for _, value := range standings {
 					message = message + value["name"] + "\n"
-					message = message + "             " + value["wins"] + "      " + value["losses"] + "      " + value["waiver"]  + "\n"
+					message = message + "            " + value["wins"] + "     " + value["losses"] + "     " + value["waiver"]  + "\n"
 				}
 
-				log.Println(message)
+				sendPost(message)
 			} else if fields[0] == "!stats" {
 				if len(fields) <= 3 || len(fields) >= 6 {
 					c.JSON(http.StatusOK, nil)
