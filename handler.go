@@ -44,6 +44,8 @@ func msgHandler() gin.HandlerFunc {
 		var botResponse msg
 		if c.BindJSON(&botResponse) == nil {
 			fields := strings.Fields(botResponse.Text)
+			log.Println(botResponse.GroupId)
+			log.Println(botResponse.GroupId)
 			log.Println(fields)
 
 			if len(fields) == 0 {
