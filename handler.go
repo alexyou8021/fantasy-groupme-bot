@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"sort"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -9,7 +10,6 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
-	"strconv"
 	"strings"
 	"time"
 
@@ -31,10 +31,17 @@ type League struct {
 }
 
 type Bot struct {
-	Name	string	`json:"name"`
-	BotId	string	`json:"bot_id"`
-	GroupId	string	`json:"group_id"`
-	GroupName	string	`json:"group_name"`
+	Name      string `json:"name"`
+	BotId     string `json:"bot_id"`
+	GroupId   string `json:"group_id"`
+	GroupName string `json:"group_name"`
+}
+
+type Team struct {
+	Name string
+	Wins float64
+	Losses float64
+	Waiver float64
 }
 
 func sendPost(text string, bot_id string) {
@@ -53,11 +60,17 @@ func sendPost(text string, bot_id string) {
 
 func getBots() []Bot {
 	url := "https://api.groupme.com/v3/bots?token=" + os.Getenv("token")
+	log.Println(url)
 	resp, _ := http.Get(url)
+	log.Println(resp)
 	defer resp.Body.Close()
 	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	log.Println(bodyBytes)
+	var response map[string]interface{}
+	json.Unmarshal(bodyBytes, &response)
+	dict, _ := json.Marshal(response["response"])
 	var bots []Bot
-	json.Unmarshal(bodyBytes, &bots)
+	json.Unmarshal(dict, &bots)
 	log.Println(bots)
 	return bots
 }
@@ -173,25 +186,35 @@ func msgHandler() gin.HandlerFunc {
 				bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
 				var rosters []map[string]interface{}
 				json.Unmarshal(bodyBytes2, &rosters)
-				standings := make([]map[string]string, 12)
+				standings := make([]Team, 12)
 				for key, value := range rosters {
 					owner_id, _ := value["owner_id"].(string)
 					display_name := usernames[owner_id]
-					wins, _ := value["wins"].(int)
-					losses, _ := value["losses"].(int)
-					waiver, _ := value["waiver_position"].(int)
-					standings[key] = map[string]string{
-						"name":   display_name,
-						"wins":   strconv.Itoa(wins),
-						"losses": strconv.Itoa(losses),
-						"waiver": strconv.Itoa(waiver),
-					}
+					settings := value["settings"].(map[string]interface{})
+					var team Team
+					team.Name = display_name
+					team.Wins, _ = settings["wins"].(float64)
+					team.Losses, _ = settings["losses"].(float64)
+					team.Waiver, _ = settings["waiver_position"].(float64)
+					standings[key] = team
+				}
+				
+				var teamList []Team
+				for _, value := range standings {
+					teamList = append(teamList, value)
 				}
 
-				message := "Name      Wins Losses Waiver\n-----------------------------\n"
-				for _, value := range standings {
-					message = message + value["name"] + "\n"
-					message = message + "                   " + value["wins"] + "        " + value["losses"] + "           " + value["waiver"] + "\n"
+				sort.Slice(teamList, func(i, j int) bool {
+					if teamList[i].Wins == teamList[j].Wins {
+        					return teamList[i].Waiver < teamList[j].Waiver
+					}
+        				return teamList[i].Wins > teamList[j].Wins
+    				})
+
+				message := "Name      Record Waiver\n-----------------------------\n"
+				for _, value := range teamList {
+					message = message + value.Name + "\n"
+					message = fmt.Sprintf("%s                   %0.f-%0.f        %0.f\n", message, value.Wins, value.Losses, value.Waiver)
 				}
 
 				sendPost(message, botId)
