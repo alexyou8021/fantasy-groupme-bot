@@ -30,6 +30,13 @@ type League struct {
 	Response map[string][]map[string]string `json:"response"`
 }
 
+type Bot struct {
+	Name	string	`json:"name"`
+	BotId	string	`json:"bot_id"`
+	GroupId	string	`json:"group_id"`
+	GroupName	string	`json:"group_name"`
+}
+
 func sendPost(text string, bot_id string) {
 	message := map[string]interface{}{
 		"bot_id": bot_id,
@@ -44,12 +51,34 @@ func sendPost(text string, bot_id string) {
 	http.Post("https://api.groupme.com/v3/bots/post", "application/json", bytes.NewBuffer(bytesRepresentation))
 }
 
+func getBots() []Bot {
+	url := "https://api.groupme.com/v3/bots?token=" + os.Getenv("token")
+	resp, _ := http.Get(url)
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	var bots []Bot
+	json.Unmarshal(bodyBytes, &bots)
+	log.Println(bots)
+	return bots
+}
+
 func msgHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var botResponse msg
 		if c.BindJSON(&botResponse) == nil {
+			bots := getBots()
 			fields := strings.Fields(botResponse.Text)
-			log.Println(botResponse)
+			groupId := botResponse.GroupId
+			botId := ""
+
+			for _, bot := range bots {
+				if bot.GroupId == groupId {
+					botId = bot.BotId
+					break
+				}
+			}
+
+			log.Println(botId)
 			log.Println(fields)
 
 			if len(fields) == 0 {
@@ -59,19 +88,19 @@ func msgHandler() gin.HandlerFunc {
 
 			if fields[0] == "!help" {
 				if botResponse.GroupId == os.Getenv("htown") {
-					sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.\nType `!draft` for draft info.\nType `!standings` for league standings.", botResponse.GroupId)
+					sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.\nType `!draft` for draft info.\nType `!standings` for league standings.", botId)
 				} else {
-					sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.", botResponse.GroupId)
+					sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.", botId)
 				}
 			} else if fields[0] == "!coin" {
 				result := "Your coin landed on HEADS."
 				if rand.Intn(2) == 1 {
 					result = "Your coin landed on TAILS."
 				}
-				sendPost(result, botResponse.GroupId)
+				sendPost(result, botId)
 			} else if fields[0] == "!draft" {
 				message := os.Getenv("draft")
-				sendPost(message, botResponse.GroupId)
+				sendPost(message, botId)
 			} else if fields[0] == "!smack" {
 				groupid := botResponse.GroupId
 				url1 := "https://api.groupme.com/v3/groups/" + groupid + "?token="
@@ -116,7 +145,7 @@ func msgHandler() gin.HandlerFunc {
 				bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
 
 				result := "@" + string(bodyBytes2)
-				sendPost(result, botResponse.GroupId)
+				sendPost(result, botId)
 			} else if fields[0] == "!standings" {
 				league := os.Getenv("league")
 
@@ -165,7 +194,7 @@ func msgHandler() gin.HandlerFunc {
 					message = message + "                   " + value["wins"] + "        " + value["losses"] + "           " + value["waiver"] + "\n"
 				}
 
-				sendPost(message, botResponse.GroupId)
+				sendPost(message, botId)
 			} else if fields[0] == "!stats" {
 				if len(fields) <= 3 || len(fields) >= 6 {
 					c.JSON(http.StatusOK, nil)
@@ -183,7 +212,7 @@ func msgHandler() gin.HandlerFunc {
 					return
 				}
 				if player.Name == "" {
-					sendPost("Player Not Found.", botResponse.GroupId)
+					sendPost("Player Not Found.", botId)
 					return
 				}
 
@@ -210,7 +239,7 @@ func msgHandler() gin.HandlerFunc {
 					message = message + "- Catches: " + rec + "\n"
 					message = message + "- Yards: " + rec_yd + "\n"
 					message = message + "- TDs: " + rec_td + "\n"
-					sendPost(message, botResponse.GroupId)
+					sendPost(message, botId)
 				} else if player.Position == "RB" {
 					rush_att := fmt.Sprintf("%.0f", stat["rush_att"])
 					rush_yd := fmt.Sprintf("%.0f", stat["rush_yd"])
@@ -226,9 +255,9 @@ func msgHandler() gin.HandlerFunc {
 					message = message + "- Catches: " + rec + "\n"
 					message = message + "- Rec Yards: " + rec_yd + "\n"
 					message = message + "- Rec TDs: " + rec_td + "\n"
-					sendPost(message, botResponse.GroupId)
+					sendPost(message, botId)
 				} else if player.Position == "QB" {
-					sendPost(player.Name+": "+pts+" pts", botResponse.GroupId)
+					sendPost(player.Name+": "+pts+" pts", botId)
 					pass_yd := fmt.Sprintf("%.0f", stat["pass_yd"])
 					pass_td := fmt.Sprintf("%.0f", stat["pass_td"])
 					pass_int := fmt.Sprintf("%.0f", stat["pass_int"])
@@ -242,7 +271,7 @@ func msgHandler() gin.HandlerFunc {
 					message = message + "- Rush TDs: " + rush_td + "\n"
 					message = message + "- Fumbles: " + fum_lost + "\n"
 				} else {
-					sendPost(player.Name+": "+pts+" pts", botResponse.GroupId)
+					sendPost(player.Name+": "+pts+" pts", botId)
 				}
 			}
 
