@@ -18,6 +18,7 @@ import (
 
 type msg struct {
 	Text string `json:"text"`
+	GroupId string `json:"group_id"`
 }
 
 type League struct {
@@ -42,6 +43,7 @@ func msgHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var botResponse msg
 		if c.BindJSON(&botResponse) == nil {
+			log.Println(botResponse)
 			fields := strings.Fields(botResponse.Text)
 			log.Println(fields)
 
