@@ -3,21 +3,21 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"math/rand"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
-	"fmt"
-	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 type msg struct {
-	Text string `json:"text"`
+	Text    string `json:"text"`
 	GroupId string `json:"group_id"`
 }
 
@@ -25,9 +25,9 @@ type League struct {
 	Response map[string][]map[string]string `json:"response"`
 }
 
-func sendPost(text string) {
+func sendPost(text string, bot_id string) {
 	message := map[string]interface{}{
-		"bot_id": os.Getenv("botid"),
+		"bot_id": bot_id,
 		"text":   text,
 	}
 
@@ -43,7 +43,6 @@ func msgHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var botResponse msg
 		if c.BindJSON(&botResponse) == nil {
-			log.Println(botResponse)
 			fields := strings.Fields(botResponse.Text)
 			log.Println(fields)
 
@@ -53,18 +52,22 @@ func msgHandler() gin.HandlerFunc {
 			}
 
 			if fields[0] == "!help" {
-				sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.\nType `!draft` for draft info.\nType `!standings` for league standings.")
+				if botResponse.GroupId == os.Getenv("htown") {
+					sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.\nType `!draft` for draft info.\nType `!standings` for league standings.", botResponse.GroupId)
+				} else {
+					sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.", botResponse.GroupId)
+				}
 			} else if fields[0] == "!coin" {
 				result := "Your coin landed on HEADS."
 				if rand.Intn(2) == 1 {
 					result = "Your coin landed on TAILS."
 				}
-				sendPost(result)
+				sendPost(result, botResponse.GroupId)
 			} else if fields[0] == "!draft" {
 				message := os.Getenv("draft")
-				sendPost(message)
+				sendPost(message, botResponse.GroupId)
 			} else if fields[0] == "!smack" {
-				groupid := os.Getenv("groupid")
+				groupid := botResponse.GroupId
 				url1 := "https://api.groupme.com/v3/groups/" + groupid + "?token="
 				url1 = url1 + os.Getenv("token")
 				resp1, _ := http.Get(url1)
@@ -107,11 +110,11 @@ func msgHandler() gin.HandlerFunc {
 				bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
 
 				result := "@" + string(bodyBytes2)
-				sendPost(result)
+				sendPost(result, botResponse.GroupId)
 			} else if fields[0] == "!standings" {
 				league := os.Getenv("league")
 
-				url1 := "https://api.sleeper.app/v1/league/" + league  + "/users"
+				url1 := "https://api.sleeper.app/v1/league/" + league + "/users"
 				resp1, _ := http.Get(url1)
 
 				defer resp1.Body.Close()
@@ -128,7 +131,7 @@ func msgHandler() gin.HandlerFunc {
 
 				log.Println(usernames)
 
-				url2 := "https://api.sleeper.app/v1/league/" + league  + "/rosters"
+				url2 := "https://api.sleeper.app/v1/league/" + league + "/rosters"
 				resp2, _ := http.Get(url2)
 
 				defer resp2.Body.Close()
@@ -143,8 +146,8 @@ func msgHandler() gin.HandlerFunc {
 					losses, _ := value["losses"].(int)
 					waiver, _ := value["waiver_position"].(int)
 					standings[key] = map[string]string{
-						"name": display_name,
-						"wins": strconv.Itoa(wins),
+						"name":   display_name,
+						"wins":   strconv.Itoa(wins),
 						"losses": strconv.Itoa(losses),
 						"waiver": strconv.Itoa(waiver),
 					}
@@ -153,10 +156,10 @@ func msgHandler() gin.HandlerFunc {
 				message := "Name      Wins Losses Waiver\n-----------------------------\n"
 				for _, value := range standings {
 					message = message + value["name"] + "\n"
-					message = message + "                   " + value["wins"] + "        " + value["losses"] + "           " + value["waiver"]  + "\n"
+					message = message + "                   " + value["wins"] + "        " + value["losses"] + "           " + value["waiver"] + "\n"
 				}
 
-				sendPost(message)
+				sendPost(message, botResponse.GroupId)
 			} else if fields[0] == "!stats" {
 				if len(fields) <= 3 || len(fields) >= 6 {
 					c.JSON(http.StatusOK, nil)
@@ -174,7 +177,7 @@ func msgHandler() gin.HandlerFunc {
 					return
 				}
 				if player.Name == "" {
-					sendPost("Player Not Found.")
+					sendPost("Player Not Found.", botResponse.GroupId)
 					return
 				}
 
@@ -192,7 +195,7 @@ func msgHandler() gin.HandlerFunc {
 
 				pts := fmt.Sprintf("%.1f", stat["pts_half_ppr"])
 				message := player.Name + ": " + pts + " pts\n"
-				if player.Position == "WR" || player.Position == "TE" {	
+				if player.Position == "WR" || player.Position == "TE" {
 					rec_tgt := fmt.Sprintf("%.0f", stat["rec_tgt"])
 					rec := fmt.Sprintf("%.0f", stat["rec"])
 					rec_yd := fmt.Sprintf("%.0f", stat["rec_yd"])
@@ -201,8 +204,8 @@ func msgHandler() gin.HandlerFunc {
 					message = message + "- Catches: " + rec + "\n"
 					message = message + "- Yards: " + rec_yd + "\n"
 					message = message + "- TDs: " + rec_td + "\n"
-					sendPost(message)
-				} else if player.Position == "RB" {	
+					sendPost(message, botResponse.GroupId)
+				} else if player.Position == "RB" {
 					rush_att := fmt.Sprintf("%.0f", stat["rush_att"])
 					rush_yd := fmt.Sprintf("%.0f", stat["rush_yd"])
 					rush_td := fmt.Sprintf("%.0f", stat["rush_td"])
@@ -217,9 +220,9 @@ func msgHandler() gin.HandlerFunc {
 					message = message + "- Catches: " + rec + "\n"
 					message = message + "- Rec Yards: " + rec_yd + "\n"
 					message = message + "- Rec TDs: " + rec_td + "\n"
-					sendPost(message)
+					sendPost(message, botResponse.GroupId)
 				} else if player.Position == "QB" {
-					sendPost(player.Name + ": " + pts + " pts")
+					sendPost(player.Name+": "+pts+" pts", botResponse.GroupId)
 					pass_yd := fmt.Sprintf("%.0f", stat["pass_yd"])
 					pass_td := fmt.Sprintf("%.0f", stat["pass_td"])
 					pass_int := fmt.Sprintf("%.0f", stat["pass_int"])
@@ -233,7 +236,7 @@ func msgHandler() gin.HandlerFunc {
 					message = message + "- Rush TDs: " + rush_td + "\n"
 					message = message + "- Fumbles: " + fum_lost + "\n"
 				} else {
-					sendPost(player.Name + ": " + pts + " pts")
+					sendPost(player.Name+": "+pts+" pts", botResponse.GroupId)
 				}
 			}
 
@@ -251,13 +254,13 @@ func reminderHandler() gin.HandlerFunc {
 		day := int(time.Now().Weekday())
 
 		if day == 0 {
-			sendPost("Reminder:\nSunday games start soon.\nDon't forget to set your lineups!")
+			sendPost("Reminder:\nSunday games start soon.\nDon't forget to set your lineups!", os.Getenv("botid"))
 		}
 		if day == 2 {
-			sendPost("Reminder:\nWaivers will be process soon.\nDon't forget to set your waivers!")
+			sendPost("Reminder:\nWaivers will be process soon.\nDon't forget to set your waivers!", os.Getenv("botid"))
 		}
 		if day == 4 {
-			sendPost("Reminder:\nThursday games start soon.\nDon't forget to set your lineups!")
+			sendPost("Reminder:\nThursday games start soon.\nDon't forget to set your lineups!", os.Getenv("botid"))
 		}
 		c.JSON(http.StatusOK, nil)
 	}
