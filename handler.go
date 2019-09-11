@@ -42,6 +42,7 @@ type Team struct {
 	Wins float64
 	Losses float64
 	Waiver float64
+	Budget float64
 }
 
 func sendPost(text string, bot_id string) {
@@ -196,6 +197,7 @@ func msgHandler() gin.HandlerFunc {
 					team.Wins, _ = settings["wins"].(float64)
 					team.Losses, _ = settings["losses"].(float64)
 					team.Waiver, _ = settings["waiver_position"].(float64)
+					team.Budget, _ = 200 - settings["waiver_budget_used"].(float64)
 					standings[key] = team
 				}
 				
@@ -214,7 +216,7 @@ func msgHandler() gin.HandlerFunc {
 				message := "Name      Record Waiver\n-----------------------------\n"
 				for _, value := range teamList {
 					message = message + value.Name + "\n"
-					message = fmt.Sprintf("%s                   %0.f-%0.f        %0.f\n", message, value.Wins, value.Losses, value.Waiver)
+					message = fmt.Sprintf("%s                   %0.f-%0.f      %0.f\n", message, value.Wins, value.Losses, value.Budget)
 				}
 
 				sendPost(message, botId)
