@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"sort"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,6 +9,7 @@ import (
 	"math/rand"
 	"net/http"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
@@ -38,8 +38,8 @@ type Bot struct {
 }
 
 type Team struct {
-	Name string
-	Wins float64
+	Name   string
+	Wins   float64
 	Losses float64
 	Waiver float64
 	Budget float64
@@ -102,9 +102,9 @@ func msgHandler() gin.HandlerFunc {
 
 			if fields[0] == "!help" {
 				if botResponse.GroupId == os.Getenv("htown") {
-					sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.\nType `!draft` for draft info.\nType `!standings` for league standings.", botId)
+					sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!suckup @someone` to show admiration.\nType `!stats player season week` for stats.\nType `!draft` for draft info.\nType `!standings` for league standings.", botId)
 				} else {
-					sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!stats player season week` for stats.", botId)
+					sendPost("I am your chat bot.\nType `!coin` to flip a coin.\nType `!smack @someone` to talk trash.\nType `!suckup @someone` to show admiration.\nType `!stats player season week` for stats.", botId)
 				}
 			} else if fields[0] == "!coin" {
 				result := "Your coin landed on HEADS."
@@ -117,76 +117,46 @@ func msgHandler() gin.HandlerFunc {
 				sendPost(message, botId)
 			} else if fields[0] == "!smack" {
 				groupid := botResponse.GroupId
-				url1 := "https://api.groupme.com/v3/groups/" + groupid + "?token="
-				url1 = url1 + os.Getenv("token")
-				resp1, _ := http.Get(url1)
-
-				defer resp1.Body.Close()
-				bodyBytes1, _ := ioutil.ReadAll(resp1.Body)
-				var league League
-				json.Unmarshal(bodyBytes1, &league)
+				league := getLeague(groupid)
 
 				members := league.Response["members"]
-				memberNum := -1
-
-				for i := 0; i < len(members); i++ {
-					if len(fields) == 1 {
-						break
-					} else if len(fields) == 2 {
-						if fields[1] == "@"+members[i]["nickname"] {
-							memberNum = i
-							break
-						}
-					} else {
-						if fields[1]+" "+fields[2] == "@"+members[i]["nickname"] {
-							memberNum = i
-							break
-						}
-					}
-				}
-
+				memberNum := getMemberNum(fields, members)
 				if memberNum == -1 {
 					memberNum = rand.Intn(len(members))
 				}
 
-				nickname := strings.Replace(members[memberNum]["nickname"], " ", "%20", 1)
+				nickname := members[memberNum]["nickname"]
+				if nickname == os.Getenv("me") {
+					sendCompliment(nickname, botId)
+				}
 
-				url2 := "https://insult.mattbas.org/api/insult?who=" + nickname
-				log.Println(url2)
-				resp2, _ := http.Get(url2)
+				sendInsult(nickname, botId)
+			} else if fields[0] == "!suckup" {
+				groupid := botResponse.GroupId
+				league := getLeague(groupid)
 
-				defer resp2.Body.Close()
-				bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
+				members := league.Response["members"]
+				memberNum := getMemberNum(fields, members)
+				if memberNum == -1 {
+					memberNum = rand.Intn(len(members))
+				}
+				nickname := members[memberNum]["nickname"]
 
-				result := "@" + string(bodyBytes2)
-				sendPost(result, botId)
+				sendCompliment(nickname, botId)
+
 			} else if fields[0] == "!standings" {
 				league := os.Getenv("league")
 
-				url1 := "https://api.sleeper.app/v1/league/" + league + "/users"
-				resp1, _ := http.Get(url1)
-
-				defer resp1.Body.Close()
-				bodyBytes1, _ := ioutil.ReadAll(resp1.Body)
-				var users []map[string]interface{}
-				json.Unmarshal(bodyBytes1, &users)
-
+				users := getUsers(league)
 				usernames := make(map[string]string)
 				for _, value := range users {
 					id, _ := value["user_id"].(string)
 					display_name, _ := value["display_name"].(string)
 					usernames[id] = display_name
 				}
-
 				log.Println(usernames)
 
-				url2 := "https://api.sleeper.app/v1/league/" + league + "/rosters"
-				resp2, _ := http.Get(url2)
-
-				defer resp2.Body.Close()
-				bodyBytes2, _ := ioutil.ReadAll(resp2.Body)
-				var rosters []map[string]interface{}
-				json.Unmarshal(bodyBytes2, &rosters)
+				rosters := getRosters(league)
 				standings := make([]Team, 12)
 				for key, value := range rosters {
 					owner_id, _ := value["owner_id"].(string)
@@ -197,10 +167,11 @@ func msgHandler() gin.HandlerFunc {
 					team.Wins, _ = settings["wins"].(float64)
 					team.Losses, _ = settings["losses"].(float64)
 					team.Waiver, _ = settings["waiver_position"].(float64)
-					team.Budget, _ = 200 - settings["waiver_budget_used"].(float64)
+					team.Budget, _ = settings["waiver_budget_used"].(float64)
+					team.Budget = 200 - team.Budget
 					standings[key] = team
 				}
-				
+
 				var teamList []Team
 				for _, value := range standings {
 					teamList = append(teamList, value)
@@ -208,10 +179,10 @@ func msgHandler() gin.HandlerFunc {
 
 				sort.Slice(teamList, func(i, j int) bool {
 					if teamList[i].Wins == teamList[j].Wins {
-        					return teamList[i].Waiver < teamList[j].Waiver
+						return teamList[i].Waiver < teamList[j].Waiver
 					}
-        				return teamList[i].Wins > teamList[j].Wins
-    				})
+					return teamList[i].Wins > teamList[j].Wins
+				})
 
 				message := "Name      Record Waiver\n-----------------------------\n"
 				for _, value := range teamList {
@@ -241,15 +212,10 @@ func msgHandler() gin.HandlerFunc {
 					return
 				}
 
-				url := "https://api.sleeper.app/v1/stats/nfl/regular/" + season + "/" + week
-				resp, _ := http.Get(url)
-				defer resp.Body.Close()
-				bodyBytes, _ := ioutil.ReadAll(resp.Body)
-				var stats map[int]map[string]float32
-				json.Unmarshal(bodyBytes, &stats)
+				stats := getStats(season, week)
+
 				stat := stats[player.Id]
 
-				log.Println(url)
 				log.Println(stat)
 				log.Println(player.Name)
 
@@ -324,4 +290,101 @@ func reminderHandler() gin.HandlerFunc {
 		}
 		c.JSON(http.StatusOK, nil)
 	}
+}
+
+func getLeague(groupid string) League {
+	url := "https://api.groupme.com/v3/groups/" + groupid + "?token="
+	url = url + os.Getenv("token")
+	resp, _ := http.Get(url)
+
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	var league League
+	json.Unmarshal(bodyBytes, &league)
+
+	return league
+}
+
+func getRosters(league string) []map[string]interface{} {
+	url := "https://api.sleeper.app/v1/league/" + league + "/rosters"
+	resp, _ := http.Get(url)
+
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	var rosters []map[string]interface{}
+	json.Unmarshal(bodyBytes, &rosters)
+
+	return rosters
+}
+
+func getUsers(league string) []map[string]interface{} {
+	url := "https://api.sleeper.app/v1/league/" + league + "/users"
+	resp, _ := http.Get(url)
+
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	var users []map[string]interface{}
+	json.Unmarshal(bodyBytes, &users)
+
+	return users
+}
+
+func getStats(season string, week string) map[int]map[string]float32 {
+	url := "https://api.sleeper.app/v1/stats/nfl/regular/" + season + "/" + week
+	resp, _ := http.Get(url)
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+	var stats map[int]map[string]float32
+	json.Unmarshal(bodyBytes, &stats)
+
+	return stats
+}
+
+func getMemberNum(fields []string, members []map[string]string) int {
+	memberNum := -1
+	for i := 0; i < len(members); i++ {
+		if len(fields) == 1 {
+			break
+		} else if len(fields) == 2 {
+			if fields[1] == "@"+members[i]["nickname"] {
+				memberNum = i
+				break
+			}
+		} else if fields[1]+" "+fields[2] == "@"+members[i]["nickname"] {
+			memberNum = i
+			break
+		}
+	}
+
+	return memberNum
+}
+
+func sendCompliment(nickname string, botId string) {
+	url := "https://complimentr.com/api"
+	log.Println(url)
+	resp, _ := http.Get(url)
+
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+
+	var compliment map[string]string
+	json.Unmarshal(bodyBytes, &compliment)
+	result := "@" + nickname + ", " + compliment["compliment"]
+
+	sendPost(result, botId)
+}
+
+func sendInsult(nickname string, botId string) {
+	nickname = strings.Replace(nickname, " ", "%20", 1)
+
+	url := "https://insult.mattbas.org/api/insult?who=" + nickname
+	log.Println(url)
+	resp, _ := http.Get(url)
+
+	defer resp.Body.Close()
+	bodyBytes, _ := ioutil.ReadAll(resp.Body)
+
+	result := "@" + string(bodyBytes)
+
+	sendPost(result, botId)
 }
