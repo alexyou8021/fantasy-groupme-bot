@@ -43,6 +43,7 @@ type Team struct {
 	Losses float64
 	Waiver float64
 	Budget float64
+	PF     float64
 }
 
 func sendPost(text string, bot_id string) {
@@ -128,6 +129,7 @@ func msgHandler() gin.HandlerFunc {
 				nickname := members[memberNum]["nickname"]
 				if nickname == os.Getenv("me") {
 					sendCompliment(nickname, botId)
+					return
 				}
 
 				sendInsult(nickname, botId)
@@ -348,6 +350,7 @@ func sendStandings(botId string) {
 			team.Waiver, _ = settings["waiver_position"].(float64)
 			team.Budget, _ = settings["waiver_budget_used"].(float64)
 			team.Budget = 200 - team.Budget
+			team.PF = settings["fpts"].(float64) + settings["fpts_decimal"].(float64)/100
 			standings[key] = team
 		}
 
@@ -358,15 +361,15 @@ func sendStandings(botId string) {
 
 		sort.Slice(teamList, func(i, j int) bool {
 		if teamList[i].Wins == teamList[j].Wins {
-			return teamList[i].Waiver < teamList[j].Waiver
+			return teamList[i].PF > teamList[j].PF
 		}
 		return teamList[i].Wins > teamList[j].Wins
 	})
 
-	message := "Name      Record Waiver\n-----------------------------\n"
+	message := "Name      Record Waiver PF\n----------------------------------\n"
 	for _, value := range teamList {
 		message = message + value.Name + "\n"
-		message = fmt.Sprintf("%s                   %0.f-%0.f      %0.f\n", message, value.Wins, value.Losses, value.Budget)
+		message = fmt.Sprintf("%s                   %0.f-%0.f      %0.f      %0.f\n", message, value.Wins, value.Losses, value.Budget, value.PF)
 	}
 
 	sendPost(message, botId)
