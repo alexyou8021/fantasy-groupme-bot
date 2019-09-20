@@ -25,6 +25,7 @@ func main() {
 	})
 	router.POST("/", msgHandler())
 	router.POST("/reminders", reminderHandler())
+	router.POST("/standings", standingsHandler())
 
 	router.Run(":" + port)
 }

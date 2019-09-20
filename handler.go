@@ -145,52 +145,7 @@ func msgHandler() gin.HandlerFunc {
 				sendCompliment(nickname, botId)
 
 			} else if fields[0] == "!standings" {
-				league := os.Getenv("league")
-
-				users := getUsers(league)
-				usernames := make(map[string]string)
-				for _, value := range users {
-					id, _ := value["user_id"].(string)
-					display_name, _ := value["display_name"].(string)
-					usernames[id] = display_name
-				}
-				log.Println(usernames)
-
-				rosters := getRosters(league)
-				standings := make([]Team, 12)
-				for key, value := range rosters {
-					owner_id, _ := value["owner_id"].(string)
-					display_name := usernames[owner_id]
-					settings := value["settings"].(map[string]interface{})
-					var team Team
-					team.Name = display_name
-					team.Wins, _ = settings["wins"].(float64)
-					team.Losses, _ = settings["losses"].(float64)
-					team.Waiver, _ = settings["waiver_position"].(float64)
-					team.Budget, _ = settings["waiver_budget_used"].(float64)
-					team.Budget = 200 - team.Budget
-					standings[key] = team
-				}
-
-				var teamList []Team
-				for _, value := range standings {
-					teamList = append(teamList, value)
-				}
-
-				sort.Slice(teamList, func(i, j int) bool {
-					if teamList[i].Wins == teamList[j].Wins {
-						return teamList[i].Waiver < teamList[j].Waiver
-					}
-					return teamList[i].Wins > teamList[j].Wins
-				})
-
-				message := "Name      Record Waiver\n-----------------------------\n"
-				for _, value := range teamList {
-					message = message + value.Name + "\n"
-					message = fmt.Sprintf("%s                   %0.f-%0.f      %0.f\n", message, value.Wins, value.Losses, value.Budget)
-				}
-
-				sendPost(message, botId)
+				sendStandings(botId)
 			} else if fields[0] == "!stats" {
 				if len(fields) <= 3 || len(fields) >= 6 {
 					c.JSON(http.StatusOK, nil)
@@ -268,27 +223,6 @@ func msgHandler() gin.HandlerFunc {
 
 			c.JSON(http.StatusOK, nil)
 		}
-	}
-}
-
-func reminderHandler() gin.HandlerFunc {
-	return func(c *gin.Context) {
-		if os.Getenv("reminders") != "on" {
-			c.JSON(http.StatusOK, nil)
-			return
-		}
-		day := int(time.Now().Weekday())
-
-		if day == 0 {
-			sendPost("Reminder:\nSunday games start soon.\nDon't forget to set your lineups!", os.Getenv("botid"))
-		}
-		if day == 2 {
-			sendPost("Reminder:\nWaivers will be process soon.\nDon't forget to set your waivers!", os.Getenv("botid"))
-		}
-		if day == 4 {
-			sendPost("Reminder:\nThursday games start soon.\nDon't forget to set your lineups!", os.Getenv("botid"))
-		}
-		c.JSON(http.StatusOK, nil)
 	}
 }
 
@@ -387,4 +321,81 @@ func sendInsult(nickname string, botId string) {
 	result := "@" + string(bodyBytes)
 
 	sendPost(result, botId)
+}
+
+func sendStandings(botId string) {
+		league := os.Getenv("league")
+
+		users := getUsers(league)
+		usernames := make(map[string]string)
+		for _, value := range users {
+			id, _ := value["user_id"].(string)
+			display_name, _ := value["display_name"].(string)
+			usernames[id] = display_name
+		}
+		log.Println(usernames)
+
+		rosters := getRosters(league)
+		standings := make([]Team, 12)
+		for key, value := range rosters {
+			owner_id, _ := value["owner_id"].(string)
+			display_name := usernames[owner_id]
+			settings := value["settings"].(map[string]interface{})
+			var team Team
+			team.Name = display_name
+			team.Wins, _ = settings["wins"].(float64)
+			team.Losses, _ = settings["losses"].(float64)
+			team.Waiver, _ = settings["waiver_position"].(float64)
+			team.Budget, _ = settings["waiver_budget_used"].(float64)
+			team.Budget = 200 - team.Budget
+			standings[key] = team
+		}
+
+		var teamList []Team
+		for _, value := range standings {
+			teamList = append(teamList, value)
+		}
+
+		sort.Slice(teamList, func(i, j int) bool {
+		if teamList[i].Wins == teamList[j].Wins {
+			return teamList[i].Waiver < teamList[j].Waiver
+		}
+		return teamList[i].Wins > teamList[j].Wins
+	})
+
+	message := "Name      Record Waiver\n-----------------------------\n"
+	for _, value := range teamList {
+		message = message + value.Name + "\n"
+		message = fmt.Sprintf("%s                   %0.f-%0.f      %0.f\n", message, value.Wins, value.Losses, value.Budget)
+	}
+
+	sendPost(message, botId)
+}
+
+func reminderHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		if os.Getenv("reminders") != "on" {
+			c.JSON(http.StatusOK, nil)
+			return
+		}
+		day := int(time.Now().Weekday())
+
+		if day == 0 {
+			sendPost("Reminder:\nSunday games start soon.\nDon't forget to set your lineups!", os.Getenv("botid"))
+		}
+		if day == 2 {
+			sendPost("Reminder:\nWaivers will be process soon.\nDon't forget to set your waivers!", os.Getenv("botid"))
+		}
+		if day == 4 {
+			sendPost("Reminder:\nThursday games start soon.\nDon't forget to set your lineups!", os.Getenv("botid"))
+		}
+		c.JSON(http.StatusOK, nil)
+	}
+}
+
+func standingsHandler() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		sendStandings(os.Getenv("botid"))
+		c.JSON(http.StatusOK, nil)
+	}
 }
