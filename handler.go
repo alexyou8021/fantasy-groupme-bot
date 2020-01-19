@@ -221,7 +221,9 @@ func msgHandler() gin.HandlerFunc {
 				} else {
 					sendPost(player.Name+": "+pts+" pts", botId)
 				}
-			}
+			} else if botResponse.Text != "^this statement will not be acknowledged" {
+				sendPost("^this statement will not be acknowledged", botId)
+                        }
 
 			c.JSON(http.StatusOK, nil)
 		}
